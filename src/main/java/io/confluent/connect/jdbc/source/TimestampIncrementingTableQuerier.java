@@ -141,6 +141,7 @@ public class TimestampIncrementingTableQuerier extends TableQuerier {
       builder.append(JdbcUtils.quoteString(timestampColumn, quoteString));
       builder.append(" ASC");
     }
+    builder.append(" LIMIT 10000");
     String queryString = builder.toString();
     log.debug("{} prepared SQL query: {}", this, queryString);
     stmt = db.prepareStatement(queryString);
