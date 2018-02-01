@@ -112,14 +112,11 @@ public class TimestampIncrementingTableQuerier extends TableQuerier {
       // We should capture both id = 22 (an update) and id = 23 (a new row)
       builder.append(" WHERE ");
       builder.append(JdbcUtils.quoteString(timestampColumn, quoteString));
-      builder.append(" < ? AND ((");
+      builder.append(" < ? AND (");
       builder.append(JdbcUtils.quoteString(timestampColumn, quoteString));
-      builder.append(" = ? AND ");
+      builder.append(", ");
       builder.append(JdbcUtils.quoteString(incrementingColumn, quoteString));
-      builder.append(" > ?");
-      builder.append(") OR ");
-      builder.append(JdbcUtils.quoteString(timestampColumn, quoteString));
-      builder.append(" > ?)");
+      builder.append(") > (?, ?)");
       builder.append(" ORDER BY ");
       builder.append(JdbcUtils.quoteString(timestampColumn, quoteString));
       builder.append(",");
@@ -141,6 +138,7 @@ public class TimestampIncrementingTableQuerier extends TableQuerier {
       builder.append(JdbcUtils.quoteString(timestampColumn, quoteString));
       builder.append(" ASC");
     }
+    builder.append(" LIMIT 10000");
     String queryString = builder.toString();
     log.debug("{} prepared SQL query: {}", this, queryString);
     stmt = db.prepareStatement(queryString);
@@ -155,7 +153,6 @@ public class TimestampIncrementingTableQuerier extends TableQuerier {
       stmt.setTimestamp(1, endTime, DateTimeUtils.UTC_CALENDAR.get());
       stmt.setTimestamp(2, tsOffset, DateTimeUtils.UTC_CALENDAR.get());
       stmt.setLong(3, incOffset);
-      stmt.setTimestamp(4, tsOffset, DateTimeUtils.UTC_CALENDAR.get());
       log.debug("Executing prepared statement with start time value = {} end time = {} and incrementing value = {}",
                 DateTimeUtils.formatUtcTimestamp(tsOffset),
                 DateTimeUtils.formatUtcTimestamp(endTime),
